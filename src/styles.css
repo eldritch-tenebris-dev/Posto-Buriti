@@ -1,0 +1,209 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  /* Ipiranga Design System - High Performance Professional ERP */
+  --radius: 1rem;
+
+  /* Surfaces - Sophisticated Dark UI */
+  --background: oklch(0.08 0.01 250);
+  --foreground: oklch(0.98 0.005 250);
+  
+  --card: oklch(0.12 0.02 255);
+  --card-foreground: oklch(0.98 0.005 250);
+  
+  --popover: oklch(0.12 0.02 255);
+  --popover-foreground: oklch(0.98 0.005 250);
+
+  /* Primary Brand - Official Ipiranga Blue */
+  --primary: oklch(0.48 0.18 255);
+  --primary-foreground: oklch(0.98 0.005 250);
+  --primary-glow: oklch(0.48 0.18 255 / 0.25);
+
+  /* Accent Brand - Official Ipiranga Yellow */
+  --accent: oklch(0.88 0.22 88);
+  --accent-foreground: oklch(0.1 0.02 255);
+  --accent-glow: oklch(0.88 0.22 88 / 0.35);
+
+  /* Secondary Brand - Ipiranga Orange */
+  --secondary: oklch(0.68 0.24 48);
+  --secondary-foreground: oklch(0.98 0.005 250);
+
+  --muted: oklch(0.16 0.015 255);
+  --muted-foreground: oklch(0.6 0.02 250);
+
+  --destructive: oklch(0.55 0.2 28);
+  --destructive-foreground: oklch(0.98 0.005 250);
+
+  --success: oklch(0.75 0.16 155);
+  --success-foreground: oklch(0.1 0.02 255);
+
+  --warning: oklch(0.85 0.16 85);
+  --warning-foreground: oklch(0.1 0.02 255);
+
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 6%);
+  --ring: oklch(0.48 0.18 255);
+
+  --sidebar: oklch(0.06 0.015 255);
+  --sidebar-foreground: oklch(0.85 0.01 250);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(0.12 0.02 255);
+  --sidebar-accent-foreground: oklch(0.98 0.005 250);
+  --sidebar-border: oklch(1 0 0 / 6%);
+
+  /* Advanced Shadows & Professional Gradients */
+  --shadow-premium: 0 20px 50px -12px oklch(0 0 0 / 0.8), 0 0 1px 1px oklch(1 0 0 / 0.05);
+  --shadow-inner: inset 0 1px 1px 0 oklch(1 0 0 / 0.08);
+  --gradient-mesh: radial-gradient(at 0% 0%, oklch(0.48 0.18 255 / 0.08) 0px, transparent 50%),
+                   radial-gradient(at 100% 0%, oklch(0.88 0.22 88 / 0.05) 0px, transparent 50%),
+                   radial-gradient(at 100% 100%, oklch(0.48 0.18 255 / 0.05) 0px, transparent 50%);
+  --gradient-primary: linear-gradient(135deg, oklch(0.48 0.18 255), oklch(0.38 0.15 255));
+  --gradient-accent: linear-gradient(135deg, oklch(0.88 0.22 88), oklch(0.82 0.2 82));
+}
+
+@theme inline {
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-primary-glow: var(--primary-glow);
+  --color-accent-glow: var(--accent-glow);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+    outline-color: var(--color-ring);
+  }
+
+  body {
+    background: var(--color-background);
+    background-image: var(--gradient-mesh);
+    background-attachment: fixed;
+    color: var(--color-foreground);
+    font-feature-settings: "ss01", "ss03", "cv01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.03em;
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  .premium-glass {
+    background: oklch(1 0 0 / 3%);
+    backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid oklch(1 0 0 / 10%);
+    box-shadow: var(--shadow-inner), var(--shadow-premium);
+  }
+
+  .premium-card {
+    @apply relative overflow-hidden rounded-2xl border bg-card/50 transition-all duration-300 hover:bg-card/80;
+    box-shadow: var(--shadow-inner), var(--shadow-premium);
+  }
+
+  .premium-card::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none;
+    background: radial-gradient(600px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), oklch(1 0 0 / 8%), transparent 40%);
+  }
+
+  .premium-card:hover::after {
+    @apply opacity-100;
+  }
+
+  .text-gradient {
+    background: linear-gradient(to bottom right, oklch(0.98 0.005 250), oklch(0.7 0.02 250));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .glow-primary { box-shadow: 0 0 20px var(--primary-glow); }
+  .glow-accent { box-shadow: 0 0 20px var(--accent-glow); }
+  .shadow-glow { box-shadow: 0 0 15px var(--primary-glow); }
+  .shadow-glow-accent { box-shadow: 0 0 15px var(--accent-glow); }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, var(--accent), oklch(0.8 0.18 80));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  @keyframes reveal {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .animate-reveal {
+    animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+#lovable-badge {
+  display: none !important;
+}
