@@ -1,1 +1,164 @@
-/**\n * Sistema de Autenticação\n * \n * Gerencia autentica\u00e7\u00e3o de usu\u00e1rios via Supabase Auth.\n * Fornece Context para acessar informa\u00e7\u00f5es de usu\u00e1rio e permiss\u00f5es.\n * \n * Fluxo:\n * 1. AuthProvider monitora mudan\u00e7as de sess\u00e3o do Supabase\n * 2. Carrega o role do usu\u00e1rio da tabela user_roles\n * 3. Expõe via Context (useAuth hook)\n */\n\nimport * as React from \"react\";\nimport type { Session, User } from \"@supabase/supabase-js\";\nimport { supabase } from \"@/integrations/supabase/client\";\n\n/**\n * Tipos de papéis de usuário no sistema.\n * - admin: Acesso total ao painel administrativo\n * - frentista: Operador de pista (vendas e consultas)\n * - null: Não autenticado\n */\ntype Role = \"admin\" | \"frentista\" | null;\n\n/**\n * Estado de autenticação compartilhado via Context.\n * \n * @property user - Usuário autenticado do Supabase\n * @property session - Sessão ativa do Supabase\n * @property role - Papel do usuário (admin, frentista, etc)\n * @property loading - Indica se está carregando dados iniciais\n * @property signOut - Função para fazer logout\n * @property refresh - Função para recarregar role do usuário\n */\ninterface AuthState {\n  user: User | null;\n  session: Session | null;\n  role: Role;\n  loading: boolean;\n  signOut: () => Promise<void>;\n  refresh: () => Promise<void>;\n}\n\n/** Context React para compartilhar estado de autenticação */\nconst AuthCtx = React.createContext<AuthState | null>(null);\n\n/**\n * Provedor de autenticação que deve envolver toda a aplicação.\n * \n * Responsabilidades:\n * - Monitora mudanças de autenticação do Supabase\n * - Carrega e atualiza o role do usuário\n * - Fornece estado via Context\n * \n * @example\n * <AuthProvider>\n *   <App />\n * </AuthProvider>\n */\nexport function AuthProvider({ children }: { children: React.ReactNode }) {\n  const [session, setSession] = React.useState<Session | null>(null);\n  const [role, setRole] = React.useState<Role>(null);\n  const [loading, setLoading] = React.useState(true);\n\n  /**\n   * Carrega o role do usuário a partir da tabela user_roles.\n   * \n   * Busca todas as permissões do usuário e define a mais alta:\n   * - admin > frentista > nenhum\n   * \n   * @param uid ID do usuário\n   */\n  const loadRole = React.useCallback(async (uid: string | undefined) => {\n    if (!uid) {\n      setRole(null);\n      return;\n    }\n    const { data } = await supabase\n      .from(\"user_roles\")\n      .select(\"role\")\n      .eq(\"user_id\", uid);\n    if (data && data.length > 0) {\n      const roles = data.map((r) => r.role);\n      // Define o role mais permissivo: admin > frentista\n      setRole(roles.includes(\"admin\") ? \"admin\" : roles.includes(\"frentista\") ? \"frentista\" : null);\n    } else {\n      setRole(null);\n    }\n  }, []);\n\n  /**\n   * Efeito: Monitora mudanças de autenticação.\n   * \n   * - Configura listener para onAuthStateChange\n   * - Carrega sessão e role iniciais\n   * - Limpa subscription ao desmontar\n   * \n   * Nota: loadRole é feito com setTimeout para evitar deadlocks\n   * dentro do callback do Supabase.\n   */\n  React.useEffect(() => {\n    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {\n      setSession(s);\n      // Adia o lookup de role para evitar deadlocks dentro do callback\n      setTimeout(() => loadRole(s?.user.id), 0);\n    });\n    supabase.auth.getSession().then(({ data }) => {\n      setSession(data.session);\n      loadRole(data.session?.user.id).finally(() => setLoading(false));\n    });\n    return () => sub.subscription.unsubscribe();\n  }, [loadRole]);\n\n  // Constrói o estado final para o Context\n  const value: AuthState = {\n    user: session?.user ?? null,\n    session,\n    role,\n    loading,\n    signOut: async () => {\n      await supabase.auth.signOut();\n    },\n    refresh: async () => {\n      await loadRole(session?.user.id);\n    },\n  };\n\n  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;\n}\n\n/**\n * Hook para acessar estado de autenticação.\n * \n * Deve ser usado DENTRO de um AuthProvider.\n * \n * @returns Estado de autenticação completo\n * \n * @example\n * function MyComponent() {\n *   const { user, role, loading } = useAuth();\n *   if (loading) return <Loading />;\n *   if (!user) return <LoginPage />;\n *   return <Dashboard />;\n * }\n */\nexport function useAuth() {\n  const ctx = React.useContext(AuthCtx);\n  if (!ctx) throw new Error(\"useAuth deve ser usado dentro de AuthProvider\");\n  return ctx;\n}\n\n/**\n * Converte código de frentista (números) para email de autenticação.\n * \n * Exemplo: \"5\" -> \"f05@buriti.local\"\n * \n * Este padrão permite login simples usando apenas número na pista.\n * \n * @param code Código do frentista (ex: \"1\", \"42\")\n * @returns Email formatado para Supabase Auth\n */\nexport function codeToEmail(code: string) {\n  return `f${code.padStart(2, \"0\")}@buriti.local`;\n}
+/**
+ * Sistema de AutenticaÃ§Ã£o
+ * 
+ * Gerencia autenticação de usuários via Supabase Auth.
+ * Fornece Context para acessar informações de usuário e permissões.
+ * 
+ * Fluxo:
+ * 1. AuthProvider monitora mudanças de sessão do Supabase
+ * 2. Carrega o role do usuário da tabela user_roles
+ * 3. ExpÃµe via Context (useAuth hook)
+ */
+
+import * as React from "react";
+import type { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+
+/**
+ * Tipos de papÃ©is de usuÃ¡rio no sistema.
+ * - admin: Acesso total ao painel administrativo
+ * - frentista: Operador de pista (vendas e consultas)
+ * - null: NÃ£o autenticado
+ */
+type Role = "admin" | "frentista" | null;
+
+/**
+ * Estado de autenticaÃ§Ã£o compartilhado via Context.
+ * 
+ * @property user - UsuÃ¡rio autenticado do Supabase
+ * @property session - SessÃ£o ativa do Supabase
+ * @property role - Papel do usuÃ¡rio (admin, frentista, etc)
+ * @property loading - Indica se estÃ¡ carregando dados iniciais
+ * @property signOut - FunÃ§Ã£o para fazer logout
+ * @property refresh - FunÃ§Ã£o para recarregar role do usuÃ¡rio
+ */
+interface AuthState {
+  user: User | null;
+  session: Session | null;
+  role: Role;
+  loading: boolean;
+  signOut: () => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
+/** Context React para compartilhar estado de autenticaÃ§Ã£o */
+const AuthCtx = React.createContext<AuthState | null>(null);
+
+/**
+ * Provedor de autenticaÃ§Ã£o que deve envolver toda a aplicaÃ§Ã£o.
+ * 
+ * Responsabilidades:
+ * - Monitora mudanÃ§as de autenticaÃ§Ã£o do Supabase
+ * - Carrega e atualiza o role do usuÃ¡rio
+ * - Fornece estado via Context
+ * 
+ * @example
+ * <AuthProvider>
+ *   <App />
+ * </AuthProvider>
+ */
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = React.useState<Session | null>(null);
+  const [role, setRole] = React.useState<Role>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  /**
+   * Carrega o role do usuÃ¡rio a partir da tabela user_roles.
+   * 
+   * Busca todas as permissÃµes do usuÃ¡rio e define a mais alta:
+   * - admin > frentista > nenhum
+   * 
+   * @param uid ID do usuÃ¡rio
+   */
+  const loadRole = React.useCallback(async (uid: string | undefined) => {
+    if (!uid) {
+      setRole(null);
+      return;
+    }
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", uid);
+    if (data && data.length > 0) {
+      const roles = data.map((r) => r.role);
+      // Define o role mais permissivo: admin > frentista
+      setRole(roles.includes("admin") ? "admin" : roles.includes("frentista") ? "frentista" : null);
+    } else {
+      setRole(null);
+    }
+  }, []);
+
+  /**
+   * Efeito: Monitora mudanÃ§as de autenticaÃ§Ã£o.
+   * 
+   * - Configura listener para onAuthStateChange
+   * - Carrega sessÃ£o e role iniciais
+   * - Limpa subscription ao desmontar
+   * 
+   * Nota: loadRole Ã© feito com setTimeout para evitar deadlocks
+   * dentro do callback do Supabase.
+   */
+  React.useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      // Adia o lookup de role para evitar deadlocks dentro do callback
+      setTimeout(() => loadRole(s?.user.id), 0);
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      loadRole(data.session?.user.id).finally(() => setLoading(false));
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [loadRole]);
+
+  // ConstrÃ³i o estado final para o Context
+  const value: AuthState = {
+    user: session?.user ?? null,
+    session,
+    role,
+    loading,
+    signOut: async () => {
+      await supabase.auth.signOut();
+    },
+    refresh: async () => {
+      await loadRole(session?.user.id);
+    },
+  };
+
+  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
+}
+
+/**
+ * Hook para acessar estado de autenticaÃ§Ã£o.
+ * 
+ * Deve ser usado DENTRO de um AuthProvider.
+ * 
+ * @returns Estado de autenticaÃ§Ã£o completo
+ * 
+ * @example
+ * function MyComponent() {
+ *   const { user, role, loading } = useAuth();
+ *   if (loading) return <Loading />;
+ *   if (!user) return <LoginPage />;
+ *   return <Dashboard />;
+ * }
+ */
+export function useAuth() {
+  const ctx = React.useContext(AuthCtx);
+  if (!ctx) throw new Error("useAuth deve ser usado dentro de AuthProvider");
+  return ctx;
+}
+
+/**
+ * Converte cÃ³digo de frentista (nÃºmeros) para email de autenticaÃ§Ã£o.
+ * 
+ * Exemplo: "5" -> "f05@buriti.local"
+ * 
+ * Este padrÃ£o permite login simples usando apenas nÃºmero na pista.
+ * 
+ * @param code CÃ³digo do frentista (ex: "1", "42")
+ * @returns Email formatado para Supabase Auth
+ */
+export function codeToEmail(code: string) {
+  return `f${code.padStart(2, "0")}@buriti.local`;
+}
