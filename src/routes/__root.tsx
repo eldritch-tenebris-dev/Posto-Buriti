@@ -82,11 +82,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Sistema ERP de gestão de estoque, pista e vendas do Posto Buriti." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Posto Buriti — Gestão de Estoque" },
       { name: "twitter:description", content: "Sistema ERP de gestão de estoque, pista e vendas do Posto Buriti." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/23d73006-e22d-4eb0-ad6a-61497d5eefa5/id-preview-e79e6d4d--1c686425-d844-4bc5-93e1-bc98c3f7826a.lovable.app-1779998853634.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/23d73006-e22d-4eb0-ad6a-61497d5eefa5/id-preview-e79e6d4d--1c686425-d844-4bc5-93e1-bc98c3f7826a.lovable.app-1779998853634.png" },
     ],
     links: [
       {
